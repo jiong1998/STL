@@ -10,7 +10,7 @@ STL 从广义上分为:
  STL 几乎所有的代码都采用了模板类或者模板函数，这相比传统的由函数和类组成的库来说提供了更好的代码重用机会。
 
 STL的六大组件：
-- 容器：各种数据结构，如vector、list、deque、set、map等,用来存放数据，从实现角度来看，STL容器是一种class template。
+- 容器：各种数据结构，如vector、list、deque、set、map等,用来存放数据，从实现角度来看，STL容器是一种class template。分为**序列式容器**和**关联式容器**两种。
 - 算法：各种常用的算法，如sort、find、copy、for_each。从实现的角度来看，STL算法是一种function tempalte.
 - 迭代器（可以理解成指针）：**扮演了容器与算法之间的胶合剂**，共有五种类型，从实现角度来看，迭代器是一种将operator* , operator-> , operator++,operator--等**指针相关操作予以重载的class template.** 所有STL容器都附带有自己专属的迭代器，只有容器的设计者才知道如何遍历自己的元素。原生指针(native pointer)也是一种迭代器。
 - 仿函数：行为类似函数，可作为算法的某种策略。从实现角度来看，仿函数是一种重载了operator()的class 或者class template
@@ -254,10 +254,10 @@ Vector容器是单向开口的连续内存空间。vector 可以看作是**动�
 注意：
 &emsp;&emsp;所谓动态增加空间大小，并不是在原空间之后续接新空间(因为无法保证原空间之后尚有可配置的空间)，而是一块更大的内存空间，然后将原数据拷贝新空间，并释放原空间。**因此，对vector的任何操作，一旦引起空间的重新配置，指向原vector的所有迭代器就都失效了**。这是程序员容易犯的一个错误，务必小心。
 
-**迭代器：**
+### vector迭代器：
 Vector维护一个线性空间，所以不论元素的型别如何，普通指针都可以作为vector的迭代器，因为vector迭代器所需要的操作行为，如operaroe*, operator->, operator++, operator--, operator+, operator-, operator+=, operator-=, 普通指针天生具备。Vector支持随机存取，而普通指针正有着这样的能力。所以vector提供的是**随机访问迭代器**
 
-
+注意：**对vector的任何操作，一旦引起空间的重新配置，指向原vector的所有迭代器就都失效了**
 ## 1. vector构造函数
 ```cpp
 vector<T> v; //采用模板实现类实现，默认构造函数
@@ -306,7 +306,7 @@ erase(const_iterator start, const_iterator end);//删除迭代器从start到end�
 erase(const_iterator pos);//删除迭代器指向的元素
 clear();//删除容器中所有元素
 ```
-# 第四章 deque容器
+# 第四章 deque容器----双端队列
 ## 1. deque概述
 Vector容器是单向开口的连续内存空间，**deque则是一种双向开口的连续线性空间**。所谓的双向开口，意思是可以在头尾两端分别做元素的插入和删除操作，当然，vector容器也可以在头尾两端插入元素，但是在其头部操作效率奇差，无法被接受。
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/f81ab86c801f4f39b575280cad5d22a1.png)
@@ -314,6 +314,7 @@ Deque容器和vector容器最大的差异：
 - 一在于deque允许使用常数项时间对**头端**进行元素的插入和删除操作。
 - 二在于**deque没有容量的概念**，因为它是动态的以分段连续空间组合而成，**随时可以增加一段新的空间并链接起来**，换句话说，像vector那样，”旧空间不足而重新配置一块更大空间，然后复制元素，再释放旧空间”这样的事情在deque身上是不会发生的。也因此，deque没有必须要提供所谓的空间保留(reserve)功能.
 
+### 1.1 deque迭代器：
 虽然deque容器也提供了Random Access Iterator,但是它的迭代器并不是普通的指针，其复杂度和vector不是一个量级，这当然影响各个运算的层面。因此，除非有必要，我们应该尽可能的使用vector，而不是deque。对deque进行的排序操作，为了最高效率，可将deque先完整的复制到一个vector中，对vector容器进行排序，再复制回deque.
 
 ## 2. deque原理
@@ -383,4 +384,190 @@ insert(pos,beg,end);//在pos位置插入[beg,end)区间的数据，无返回值�
 clear();//移除容器的所有数据
 erase(beg,end);//删除[beg,end)区间的数据，返回下一个数据的位置。
 erase(pos);//删除pos位置的数据，返回下一个数据的位置。
+```
+
+# 第五章 stack容器
+## 1. stack概念
+stack是一种先进后出(First In Last Out,FILO)的数据结构，它只有一个出口，形式如图所示。stack容器允许新增元素，移除元素，取得栈顶元素，但是除了最顶端外，没有任何其他方法可以存取stack的其他元素。换言之，stack不允许有遍历行为。
+
+有元素推入栈的操作称为:push,将元素推出stack的操作称为pop.
+
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/dd28721917a0440385256b6b48798cc4.png)
+**stack没有迭代器!**：
+stack所有元素的进出都必须符合”先进后出”的条件，只有stack顶端的元素，才有机会被外界取用。Stack不提供遍历功能，也不提供迭代器。
+
+## 2. stack构造函数
+```cpp
+stack<T> stkT;//stack采用模板类实现， stack对象的默认构造形式： 
+stack(const stack &stk);//拷贝构造函数
+```
+
+## 3. stack赋值操作
+```cpp
+stack& operator=(const stack &stk);//重载等号操作符
+```
+## 4. stack数据存取操作
+```cpp
+push(elem);//向栈顶添加元素
+pop();//从栈顶移除第一个元素
+top();//返回栈顶元素
+```
+## 5. stack大小操作
+```cpp
+empty();//判断堆栈是否为空
+size();//返回堆栈的大小
+```
+
+# 第六章 queue容器----队列
+## 1. 基本概念
+Queue是一种先进先出(First In First Out,FIFO)的数据结构，它有两个出口，queue容器允许从一端新增元素，从另一端移除元素。
+![在这里插入图片描述](https://img-blog.csdnimg.cn/98c67e52f0bf44199b0c9ce3086b7a7b.png)
+**queue没有迭代器！：**
+Queue所有元素的进出都必须符合”先进先出”的条件，只有queue的顶端元素，才有机会被外界取用。Queue不提供遍历功能，也不提供迭代器。
+
+## 2. queue构造函数
+```cpp
+queue<T> queT;//queue采用模板类实现，queue对象的默认构造形式：
+queue(const queue &que);//拷贝构造函数
+```
+
+## 3. queue存取、插入和删除操作
+```cpp
+push(elem);//往队尾添加元素
+pop();//从队头移除第一个元素
+back();//返回最后一个元素
+front();//返回第一个元素
+```
+## 4. queue赋值操作
+```cpp
+queue& operator=(const queue &que);//重载等号操作符
+```
+## 5. queue大小操作
+```cpp
+empty();//判断队列是否为空
+size();//返回队列的大小
+```
+
+# 第七章 list容器----链表
+
+## 1. list基本概念
+链表是一种物理存储单元上非连续、非顺序的存储结构，数据元素的逻辑顺序是通过链表中的指针链接次序实现的。链表由一系列结点（链表中每一个元素称为结点）组成，结点可以在运行时动态生成。每个结点包括两个部分：一个是存储数据元素的数据域，另一个是存储下一个结点地址的指针域。
+
+相较于vector的连续线性空间，list就显得负责许多，它的好处是每次插入或者删除一个元素，就是配置或者释放一个元素的空间。因此，list对于空间的运用有绝对的精准，一点也不浪费。而且，对于任何位置的元素插入或元素的移除，list永远是常数时间。
+
+List和vector是两个最常被使用的容器。
+
+List容器是一个**双向循环链表**。
+![在这里插入图片描述](https://img-blog.csdnimg.cn/632910faa4124cff8812c962eee04727.png)
+
+ list（双向循环链表）的优点：
+- 采用动态存储分配，不会造成内存浪费和溢出
+- 链表执行插入和删除操作十分方便，修改指针即可，不需要移动大量元素
+- 链表灵活，但是空间和时间额外耗费较大
+
+### 1.1list迭代器：
+
+List容器不能像vector一样以普通指针作为迭代器，因为其节点不能保证在同一块连续的内存空间上。 **List迭代器必须有能力指向list的节点，并有能力进行正确的递增、递减、取值、成员存取操作。** 所谓“list正确的递增，递减、取值、成员取用”是指，递增时指向下一个节点，递减时指向上一个节点，取值时取的是节点的数据值，成员取用时取的是节点的成员。
+
+由于list是一个双向链表，迭代器必须能够具备前移、后移的能力，所以list容器提供的是Bidirectional Iterators.
+
+**List有一个重要的性质，插入操作和删除操作都不会造成原有list迭代器的失效。** 这在vector是不成立的，因为vector的插入操作可能造成记忆体重新配置，导致原有的迭代器全部失效，甚至List元素的删除，也只有被删除的那个元素的迭代器失效，其他迭代器不受任何影响。
+
+## 2. list构造函数
+```cpp
+list<T> lstT;//list采用采用模板类实现,对象的默认构造形式：
+list(beg,end);//构造函数将[beg, end)区间中的元素拷贝给本身。
+list(n,elem);//构造函数将n个elem拷贝给本身。
+list(const list &lst);//拷贝构造函数。
+```
+
+## 3. list数据元素插入和删除操作
+```cpp
+push_back(elem);//在容器尾部加入一个元素
+pop_back();//删除容器中最后一个元素
+push_front(elem);//在容器开头插入一个元素
+pop_front();//从容器开头移除第一个元素
+insert(pos,elem);//在pos位置插elem元素的拷贝，返回新数据的位置。
+insert(pos,n,elem);//在pos位置插入n个elem数据，无返回值。
+insert(pos,beg,end);//在pos位置插入[beg,end)区间的数据，无返回值。
+clear();//移除容器的所有数据
+erase(beg,end);//删除[beg,end)区间的数据，返回下一个数据的位置。
+erase(pos);//删除pos位置的数据，返回下一个数据的位置。
+remove(elem);//删除容器中所有与elem值匹配的元素。
+```
+## 4. list大小操作
+```cpp
+size();//返回容器中元素的个数
+empty();//判断容器是否为空
+resize(num);//重新指定容器的长度为num，
+若容器变长，则以默认值填充新位置。
+如果容器变短，则末尾超出容器长度的元素被删除。
+resize(num, elem);//重新指定容器的长度为num，
+若容器变长，则以elem值填充新位置。
+如果容器变短，则末尾超出容器长度的元素被删除。
+
+```
+## 5. list赋值操作
+```cpp
+assign(beg, end);//将[beg, end)区间中的数据拷贝赋值给本身。
+assign(n, elem);//将n个elem拷贝赋值给本身。
+list& operator=(const list &lst);//重载等号操作符
+swap(lst);//将lst与本身的元素互换。
+```
+
+## 6. list数据的存取
+```cpp
+front();//返回第一个元素。
+back();//返回最后一个元素。
+```
+## 7. list反转排序
+```cpp
+reverse();//反转链表，比如lst包含1,3,5元素，运行此方法后，lst就包含5,3,1元素。
+sort(); //list排序
+```
+
+# 第八章  set/multiset容器
+## 1. set基本概念
+set的特性是所有元素都会根据**元素的键值自动被排序**。Set的元素不像map那样可以同时拥有实值和键值，**set的元素即是键值又是实值**。**Set不允许两个元素有相同的键值**。
+
+**我们可以通过set的迭代器改变set元素的值吗？不行**，因为set元素值就是其键值，关系到set元素的排序规则。如果任意改变set元素值，会严重破坏set组织。换句话说，set的iterator是一种只读迭代器const_iterator.
+
+set拥有和list某些相同的性质，当对容器中的元素进行插入操作或者删除操作的时候，操作之前所有的迭代器，在操作完成之后依然有效，被删除的那个元素的迭代器必然是一个例外。
+
+## 2. multiset基本概念
+**multiset特性及用法和set完全相同**，**唯一的差别在于它允许键值重复**。set和multiset的底层实现是**红黑树**，红黑树为平衡二叉树的一种。
+
+## 3. set构造函数
+```cpp
+set<T> st;//set默认构造函数：
+mulitset<T> mst; //multiset默认构造函数: 
+set(const set &st);//拷贝构造函数
+```
+## 4. set赋值操作
+```cpp
+set& operator=(const set &st);//重载等号操作符
+swap(st);//交换两个集合容器
+```
+## 5. set大小操作
+```cpp
+size();//返回容器中元素的数目
+empty();//判断容器是否为空
+```
+
+## 6. set插入和删除操作
+```cpp
+insert(elem);//在容器中插入元素。
+clear();//清除所有元素
+erase(pos);//删除pos迭代器所指的元素，返回下一个元素的迭代器。
+erase(beg, end);//删除区间[beg,end)的所有元素 ，返回下一个元素的迭代器。
+erase(elem);//删除容器中值为elem的元素。
+```
+## 7. set查找操作
+```cpp
+find(key);//查找键key是否存在,若存在，返回该键的元素的迭代器；若不存在，返回set.end();
+count(key);//查找键key的元素个数
+lower_bound(keyElem);//返回第一个key>=keyElem元素的迭代器。
+upper_bound(keyElem);//返回第一个key>keyElem元素的迭代器。
+equal_range(keyElem);//返回容器中key与keyElem相等的上下限的两个迭代器。
 ```
